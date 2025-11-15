@@ -6,7 +6,7 @@
 	Press Left Alt to open / close
 ]]
 
-local Compkiller = loadstring(game:HttpGet("https://raw.githubusercontent.com/4lpaca-pin/CompKiller/refs/heads/main/src/source.luau"))();
+local Compkiller = loadstring(game:HttpGet("https://raw.githubusercontent.com/VortexTeamDevs/CompKiller/refs/heads/main/src/source.luau"))();
 
 
 -- Create Notification --
