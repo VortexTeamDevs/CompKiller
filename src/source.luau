@@ -341,10 +341,10 @@ local Compkiller = {
 	Logo = "rbxassetid://120245531583106",
 	Windows = {},
 	Scale = {
-		Window = UDim2.new(0, 485,0, 565),
-		Mobile = UDim2.new(0, 450,0, 375),
-		TabOpen = 185,
-		TabClose = 85,
+		Window = UDim2.new(0, 400, 0, 450),  
+		Mobile = UDim2.new(0, 350, 0, 350), 
+		TabOpen = 150,
+		TabClose = 70,
 	},
 	ArcylicParent = CurrentCamera,
 	ProtectGui = protect_gui or protectgui or (syn and syn.protect_gui) or function(s) return s; end,
@@ -5515,7 +5515,7 @@ function Compkiller.new(Config : Window)
 	MainFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	MainFrame.BorderSizePixel = 0
 	MainFrame.Position = UDim2.fromScale(0.5,0.5);
-	MainFrame.Size = Compkiller.Scale.Window
+	MainFrame.Size = UDim2.new(0, 400, 0, 450)
 	MainFrame.ZIndex = 4
 
 	MainFrame:GetPropertyChangedSignal('BackgroundTransparency'):Connect(function()
@@ -5537,7 +5537,7 @@ function Compkiller.new(Config : Window)
 	TabFrame.Active = true
 	TabFrame.Name = Compkiller:_RandomString()
 	TabFrame.Parent = MainFrame
-	TabFrame.AnchorPoint = Vector2.new(1, 0)
+	TabFrame.AnchorPoint = Vector2.new(0.5, 1)
 	TabFrame.BackgroundColor3 = Compkiller.Colors.BGDBColor
 
 	table.insert(Compkiller.Elements.BGDBColor,{
@@ -5549,8 +5549,8 @@ function Compkiller.new(Config : Window)
 	TabFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 	TabFrame.BorderSizePixel = 0
 	TabFrame.ClipsDescendants = true
-	TabFrame.Position = UDim2.new(0, 25, 0, 0)
-	TabFrame.Size = UDim2.new(0, 85, 1, 0)
+	TabFrame.Position = UDim2.new(0.5, 0, 1, 0)
+	TabFrame.Size = UDim2.new(1, -10, 0, 60)
 
 	UICorner_2.Parent = TabFrame
 
@@ -5621,23 +5621,12 @@ function Compkiller.new(Config : Window)
 	UICorner_3.CornerRadius = UDim.new(1, 0)
 	UICorner_3.Parent = SelectionFrame
 
-	TabButtonScrollingFrame.Name = Compkiller:_RandomString()
-	TabButtonScrollingFrame.Parent = TabButtons
-	TabButtonScrollingFrame.Active = true
-	TabButtonScrollingFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-	TabButtonScrollingFrame.BackgroundTransparency = 1.000
-	TabButtonScrollingFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
-	TabButtonScrollingFrame.BorderSizePixel = 0
-	TabButtonScrollingFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-	TabButtonScrollingFrame.Size = UDim2.new(1, -5, 1, -5)
-	TabButtonScrollingFrame.BottomImage = ""
-	TabButtonScrollingFrame.ScrollBarThickness = 0
-	TabButtonScrollingFrame.TopImage = ""
-
-	UIListLayout.Parent = TabButtonScrollingFrame
-	UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	UIListLayout.Padding = UDim.new(0, 4)
+	UIListLayout.Parent = TabButtons
+UIListLayout.FillDirection = Enum.FillDirection.Horizontal
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+UIListLayout.Padding = UDim.new(0, 5)
 
 	Userinfo.Name = Compkiller:_RandomString()
 	Userinfo.Parent = TabFrame
