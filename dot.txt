@@ -1,0 +1,865 @@
+local DiscordLib = {}
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local HttpService = game:GetService("HttpService")
+local pfp
+local user
+local tag
+local userinfo = {}
+
+pcall(function()
+    userinfo = HttpService:JSONDecode(readfile("vortexhub_info.txt"));
+end)
+
+pfp = userinfo["pfp"] or "https://www.roblox.com/headshot-thumbnail/image?userId=".. game.Players.LocalPlayer.UserId .."&width=420&height=420&format=png"
+user = userinfo["user"] or game.Players.LocalPlayer.Name
+tag = userinfo["tag"] or tostring(math.random(1000,9999))
+
+local function SaveInfo()
+    userinfo["pfp"] = pfp
+    userinfo["user"] = user
+    userinfo["tag"] = tag
+    writefile("vortexhub_info.txt", HttpService:JSONEncode(userinfo));
+end
+
+local function MakeDraggable(topbarobject, object)
+    local Dragging = nil
+    local DragInput = nil
+    local DragStart = nil
+    local StartPosition = nil
+
+    local function Update(input)
+        local Delta = input.Position - DragStart
+        local pos =
+            UDim2.new(
+                StartPosition.X.Scale,
+                StartPosition.X.Offset + Delta.X,
+                StartPosition.Y.Scale,
+                StartPosition.Y.Offset + Delta.Y
+            )
+        object.Position = pos
+    end
+
+    topbarobject.InputBegan:Connect(
+        function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                Dragging = true
+                DragStart = input.Position
+                StartPosition = object.Position
+
+                input.Changed:Connect(
+                    function()
+                        if input.UserInputState == Enum.UserInputState.End then
+                            Dragging = false
+                        end
+                    end
+                )
+            end
+        end
+    )
+
+    topbarobject.InputChanged:Connect(
+        function(input)
+            if
+                input.UserInputType == Enum.UserInputType.MouseMovement or
+                    input.UserInputType == Enum.UserInputType.Touch
+            then
+                DragInput = input
+            end
+        end
+    )
+
+    UserInputService.InputChanged:Connect(
+        function(input)
+            if input == DragInput and Dragging then
+                Update(input)
+            end
+        end
+    )
+end
+
+local VortexHub = Instance.new("ScreenGui")
+VortexHub.Name = "VortexHub"
+VortexHub.Parent = game.CoreGui
+VortexHub.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+function DiscordLib:Window(text)
+    local currentservertoggled = ""
+    local minimized = false
+    local fs = false
+    local settingsopened = false
+    
+    local MainFrame = Instance.new("Frame")
+    local TopFrame = Instance.new("Frame")
+    local Title = Instance.new("TextLabel")
+    local CloseBtn = Instance.new("TextButton")
+    local CloseIcon = Instance.new("ImageLabel")
+    local MinimizeBtn = Instance.new("TextButton")
+    local MinimizeIcon = Instance.new("ImageLabel")
+    local ServersHolder = Instance.new("Folder")
+    local Userpad = Instance.new("Frame")
+    local UserIcon = Instance.new("Frame")
+    local UserIconCorner = Instance.new("UICorner")
+    local UserImage = Instance.new("ImageLabel")
+    local UserCircleImage = Instance.new("ImageLabel")
+    local UserName = Instance.new("TextLabel")
+    local UserTag = Instance.new("TextLabel")
+    local ServersHoldFrame = Instance.new("Frame")
+    local ServersHold = Instance.new("ScrollingFrame")
+    local ServersHoldLayout = Instance.new("UIListLayout")
+    local ServersHoldPadding = Instance.new("UIPadding")
+    local TopFrameHolder = Instance.new("Frame")
+
+    MainFrame.Name = "MainFrame"
+    MainFrame.Parent = VortexHub
+    MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 27, 32)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.ClipsDescendants = true
+    MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    MainFrame.Size = UDim2.new(0, 500, 0, 350)
+
+    TopFrame.Name = "TopFrame"
+    TopFrame.Parent = MainFrame
+    TopFrame.BackgroundColor3 = Color3.fromRGB(25, 27, 32)
+    TopFrame.BackgroundTransparency = 1.000
+    TopFrame.BorderSizePixel = 0
+    TopFrame.Position = UDim2.new(-0.000658480625, 0, 0, 0)
+    TopFrame.Size = UDim2.new(0, 500, 0, 20)
+    
+    TopFrameHolder.Name = "TopFrameHolder"
+    TopFrameHolder.Parent = TopFrame
+    TopFrameHolder.BackgroundColor3 = Color3.fromRGB(25, 27, 32)
+    TopFrameHolder.BackgroundTransparency = 1.000
+    TopFrameHolder.BorderSizePixel = 0
+    TopFrameHolder.Position = UDim2.new(-0.000658480625, 0, 0, 0)
+    TopFrameHolder.Size = UDim2.new(0, 500, 0, 20)
+
+    Title.Name = "Title"
+    Title.Parent = TopFrame
+    Title.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Title.BackgroundTransparency = 1.000
+    Title.Position = UDim2.new(0.0102790017, 0, 0, 0)
+    Title.Size = UDim2.new(0, 150, 0, 20)
+    Title.Font = Enum.Font.Gotham
+    Title.Text = "Vortex'Hub - " .. text
+    Title.TextColor3 = Color3.fromRGB(114, 137, 228)
+    Title.TextSize = 12.000
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    CloseBtn.Name = "CloseBtn"
+    CloseBtn.Parent = TopFrame
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(25, 27, 32)
+    CloseBtn.BackgroundTransparency = 0
+    CloseBtn.Position = UDim2.new(0.95, 0, 0, 0)
+    CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+    CloseBtn.Font = Enum.Font.Gotham
+    CloseBtn.Text = ""
+    CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseBtn.TextSize = 14.000
+    CloseBtn.BorderSizePixel = 0
+    CloseBtn.AutoButtonColor = false
+
+    CloseIcon.Name = "CloseIcon"
+    CloseIcon.Parent = CloseBtn
+    CloseIcon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    CloseIcon.BackgroundTransparency = 1.000
+    CloseIcon.Position = UDim2.new(0.1, 0, 0.1, 0)
+    CloseIcon.Size = UDim2.new(0, 16, 0, 16)
+    CloseIcon.Image = "http://www.roblox.com/asset/?id=6035047409"
+    CloseIcon.ImageColor3 = Color3.fromRGB(220, 221, 222)
+
+    MinimizeBtn.Name = "MinimizeButton"
+    MinimizeBtn.Parent = TopFrame
+    MinimizeBtn.BackgroundColor3 = Color3.fromRGB(25, 27, 32)
+    MinimizeBtn.BackgroundTransparency = 0
+    MinimizeBtn.Position = UDim2.new(0.91, 0, 0, 0)
+    MinimizeBtn.Size = UDim2.new(0, 20, 0, 20)
+    MinimizeBtn.Font = Enum.Font.Gotham
+    MinimizeBtn.Text = ""
+    MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MinimizeBtn.TextSize = 14.000
+    MinimizeBtn.BorderSizePixel = 0
+    MinimizeBtn.AutoButtonColor = false
+
+    MinimizeIcon.Name = "MinimizeLabel"
+    MinimizeIcon.Parent = MinimizeBtn
+    MinimizeIcon.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    MinimizeIcon.BackgroundTransparency = 1.000
+    MinimizeIcon.Position = UDim2.new(0.1, 0, 0.1, 0)
+    MinimizeIcon.Size = UDim2.new(0, 16, 0, 16)
+    MinimizeIcon.Image = "http://www.roblox.com/asset/?id=6035067836"
+    MinimizeIcon.ImageColor3 = Color3.fromRGB(220, 221, 222)
+
+    ServersHolder.Name = "ServersHolder"
+    ServersHolder.Parent = TopFrameHolder
+
+    Userpad.Name = "Userpad"
+    Userpad.Parent = TopFrameHolder
+    Userpad.BackgroundColor3 = Color3.fromRGB(35, 37, 42)
+    Userpad.BorderSizePixel = 0
+    Userpad.Position = UDim2.new(0.106243297, 0, 15.9807148, 0)
+    Userpad.Size = UDim2.new(0, 150, 0, 40)
+
+    UserIcon.Name = "UserIcon"
+    UserIcon.Parent = Userpad
+    UserIcon.BackgroundColor3 = Color3.fromRGB(31, 33, 36)
+    UserIcon.BorderSizePixel = 0
+    UserIcon.Position = UDim2.new(0.0340000018, 0, 0.123999998, 0)
+    UserIcon.Size = UDim2.new(0, 30, 0, 30)
+
+    UserIconCorner.CornerRadius = UDim.new(1, 8)
+    UserIconCorner.Name = "UserIconCorner"
+    UserIconCorner.Parent = UserIcon
+
+    UserImage.Name = "UserImage"
+    UserImage.Parent = UserIcon
+    UserImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    UserImage.BackgroundTransparency = 1.000
+    UserImage.Size = UDim2.new(0, 30, 0, 30)
+    UserImage.Image = pfp 
+    
+    UserCircleImage.Name = "UserImage"
+    UserCircleImage.Parent = UserImage
+    UserCircleImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    UserCircleImage.BackgroundTransparency = 1.000
+    UserCircleImage.Size = UDim2.new(0, 30, 0, 30)
+    UserCircleImage.Image = "rbxassetid://4031889928"
+    UserCircleImage.ImageColor3 = Color3.fromRGB(35, 37, 42)
+    
+    UserName.Name = "UserName"
+    UserName.Parent = Userpad
+    UserName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    UserName.BackgroundTransparency = 1.000
+    UserName.BorderSizePixel = 0
+    UserName.Position = UDim2.new(0.230000004, 0, 0.115999997, 0)
+    UserName.Size = UDim2.new(0, 80, 0, 15)
+    UserName.Font = Enum.Font.GothamSemibold
+    UserName.TextColor3 = Color3.fromRGB(255, 255, 255)
+    UserName.TextSize = 12.000
+    UserName.TextXAlignment = Enum.TextXAlignment.Left
+    UserName.ClipsDescendants = true
+
+    UserTag.Name = "UserTag"
+    UserTag.Parent = Userpad
+    UserTag.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    UserTag.BackgroundTransparency = 1.000
+    UserTag.BorderSizePixel = 0
+    UserTag.Position = UDim2.new(0.230000004, 0, 0.455000013, 0)
+    UserTag.Size = UDim2.new(0, 75, 0, 15)
+    UserTag.Font = Enum.Font.Gotham
+    UserTag.TextColor3 = Color3.fromRGB(255, 255, 255)
+    UserTag.TextSize = 11.000
+    UserTag.TextTransparency = 0.300
+    UserTag.TextXAlignment = Enum.TextXAlignment.Left
+    
+    UserName.Text = user
+    UserTag.Text = "#" .. tag
+
+    ServersHoldFrame.Name = "ServersHoldFrame"
+    ServersHoldFrame.Parent = MainFrame
+    ServersHoldFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ServersHoldFrame.BackgroundTransparency = 1.000
+    ServersHoldFrame.BorderColor3 = Color3.fromRGB(27, 42, 53)
+    ServersHoldFrame.Size = UDim2.new(0, 60, 0, 350)
+
+    ServersHold.Name = "ServersHold"
+    ServersHold.Parent = ServersHoldFrame
+    ServersHold.Active = true
+    ServersHold.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ServersHold.BackgroundTransparency = 1.000
+    ServersHold.BorderSizePixel = 0
+    ServersHold.Position = UDim2.new(-0.000359333731, 0, 0.0580808073, 0)
+    ServersHold.Size = UDim2.new(0, 60, 0, 330)
+    ServersHold.ScrollBarThickness = 1
+    ServersHold.ScrollBarImageTransparency = 1
+    ServersHold.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+    ServersHoldLayout.Name = "ServersHoldLayout"
+    ServersHoldLayout.Parent = ServersHold
+    ServersHoldLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ServersHoldLayout.Padding = UDim.new(0, 5)
+
+    ServersHoldPadding.Name = "ServersHoldPadding"
+    ServersHoldPadding.Parent = ServersHold
+
+    CloseBtn.MouseButton1Click:Connect(
+        function()
+            MainFrame:TweenSize(UDim2.new(0, 0, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, .3, true)
+        end
+    )
+
+    CloseBtn.MouseEnter:Connect(
+        function()
+            CloseBtn.BackgroundColor3 = Color3.fromRGB(240, 71, 71)
+        end
+    )
+
+    CloseBtn.MouseLeave:Connect(
+        function()
+            CloseBtn.BackgroundColor3 = Color3.fromRGB(25, 27, 32)
+        end
+    )
+
+    MinimizeBtn.MouseEnter:Connect(
+        function()
+            MinimizeBtn.BackgroundColor3 = Color3.fromRGB(40, 43, 46)
+        end
+    )
+
+    MinimizeBtn.MouseLeave:Connect(
+        function()
+            MinimizeBtn.BackgroundColor3 = Color3.fromRGB(25, 27, 32)
+        end
+    )
+
+    MinimizeBtn.MouseButton1Click:Connect(
+        function()
+            if minimized == false then
+                MainFrame:TweenSize(
+                    UDim2.new(0, 500, 0, 20),
+                    Enum.EasingDirection.Out,
+                    Enum.EasingStyle.Quart,
+                    .3,
+                    true
+                )
+            else
+                MainFrame:TweenSize(
+                    UDim2.new(0, 500, 0, 350),
+                    Enum.EasingDirection.Out,
+                    Enum.EasingStyle.Quart,
+                    .3,
+                    true
+                )
+            end
+            minimized = not minimized
+        end
+    )
+    
+    -- Kısaltılmış Settings butonu
+    local SettingsOpenBtn = Instance.new("TextButton")
+    local SettingsOpenBtnIco = Instance.new("ImageLabel")
+    
+    SettingsOpenBtn.Name = "SettingsOpenBtn"
+    SettingsOpenBtn.Parent = Userpad
+    SettingsOpenBtn.BackgroundColor3 = Color3.fromRGB(53, 56, 62)
+    SettingsOpenBtn.BackgroundTransparency = 1.000
+    SettingsOpenBtn.Position = UDim2.new(0.8, 0, 0.25, 0)
+    SettingsOpenBtn.Size = UDim2.new(0, 16, 0, 16)
+    SettingsOpenBtn.Font = Enum.Font.SourceSans
+    SettingsOpenBtn.Text = ""
+    SettingsOpenBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+    SettingsOpenBtn.TextSize = 14.000
+
+    SettingsOpenBtnIco.Name = "SettingsOpenBtnIco"
+    SettingsOpenBtnIco.Parent = SettingsOpenBtn
+    SettingsOpenBtnIco.BackgroundColor3 = Color3.fromRGB(220, 220, 220)
+    SettingsOpenBtnIco.BackgroundTransparency = 1.000
+    SettingsOpenBtnIco.Size = UDim2.new(0, 16, 0, 16)
+    SettingsOpenBtnIco.Image = "http://www.roblox.com/asset/?id=6031280882"
+    SettingsOpenBtnIco.ImageColor3 = Color3.fromRGB(220, 220, 220)
+
+    -- Basitleştirilmiş Server butonu fonksiyonu
+    MakeDraggable(TopFrame, MainFrame)
+    ServersHoldPadding.PaddingLeft = UDim.new(0, 10)
+    local ServerHold = {}
+    
+    function ServerHold:Server(text, img)
+        local fc = false
+        local currentchanneltoggled = ""
+        local Server = Instance.new("TextButton")
+        local ServerBtnCorner = Instance.new("UICorner")
+        local ServerIco = Instance.new("ImageLabel")
+        local ServerWhiteFrame = Instance.new("Frame")
+        local ServerWhiteFrameCorner = Instance.new("UICorner")
+
+        Server.Name = text .. "Server"
+        Server.Parent = ServersHold
+        Server.BackgroundColor3 = Color3.fromRGB(35, 37, 42)
+        Server.Position = UDim2.new(0.125, 0, 0, 0)
+        Server.Size = UDim2.new(0, 40, 0, 40)
+        Server.AutoButtonColor = false
+        Server.Font = Enum.Font.Gotham
+        Server.Text = ""
+        Server.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Server.TextSize = 18.000
+
+        ServerBtnCorner.CornerRadius = UDim.new(1, 0)
+        ServerBtnCorner.Name = "ServerCorner"
+        ServerBtnCorner.Parent = Server
+
+        ServerIco.Name = "ServerIco"
+        ServerIco.Parent = Server
+        ServerIco.AnchorPoint = Vector2.new(0.5, 0.5)
+        ServerIco.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        ServerIco.BackgroundTransparency = 1.000
+        ServerIco.Position = UDim2.new(0.5, 0, 0.5, 0)
+        ServerIco.Size = UDim2.new(0, 20, 0, 20)
+        ServerIco.Image = ""
+
+        ServerWhiteFrame.Name = "ServerWhiteFrame"
+        ServerWhiteFrame.Parent = Server
+        ServerWhiteFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+        ServerWhiteFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        ServerWhiteFrame.Position = UDim2.new(-0.4, 0, 0.5, 0)
+        ServerWhiteFrame.Size = UDim2.new(0, 8, 0, 8)
+
+        ServerWhiteFrameCorner.CornerRadius = UDim.new(1, 0)
+        ServerWhiteFrameCorner.Name = "ServerWhiteFrameCorner"
+        ServerWhiteFrameCorner.Parent = ServerWhiteFrame
+        ServersHold.CanvasSize = UDim2.new(0, 0, 0, ServersHoldLayout.AbsoluteContentSize.Y)
+
+        -- Basitleştirilmiş ServerFrame
+        local ServerFrame = Instance.new("Frame")
+        local ServerTitleFrame = Instance.new("Frame")
+        local ServerTitle = Instance.new("TextLabel")
+        local ChannelContentFrame = Instance.new("Frame")
+        local ServerChannelHolder = Instance.new("ScrollingFrame")
+        local ServerChannelHolderLayout = Instance.new("UIListLayout")
+        local ServerChannelHolderPadding = Instance.new("UIPadding")
+
+        ServerFrame.Name = "ServerFrame"
+        ServerFrame.Parent = ServersHolder
+        ServerFrame.BackgroundColor3 = Color3.fromRGB(35, 37, 42)
+        ServerFrame.BorderSizePixel = 0
+        ServerFrame.ClipsDescendants = true
+        ServerFrame.Position = UDim2.new(0.105726875, 0, 1.01262593, 0)
+        ServerFrame.Size = UDim2.new(0, 440, 0, 330)
+        ServerFrame.Visible = false
+
+        ServerTitleFrame.Name = "ServerTitleFrame"
+        ServerTitleFrame.Parent = ServerFrame
+        ServerTitleFrame.BackgroundColor3 = Color3.fromRGB(35, 37, 42)
+        ServerTitleFrame.BackgroundTransparency = 1.000
+        ServerTitleFrame.BorderSizePixel = 0
+        ServerTitleFrame.Position = UDim2.new(-0.0010054264, 0, -0.000900391256, 0)
+        ServerTitleFrame.Size = UDim2.new(0, 150, 0, 30)
+
+        ServerTitle.Name = "ServerTitle"
+        ServerTitle.Parent = ServerTitleFrame
+        ServerTitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        ServerTitle.BackgroundTransparency = 1.000
+        ServerTitle.BorderSizePixel = 0
+        ServerTitle.Position = UDim2.new(0.0751359761, 0, 0, 0)
+        ServerTitle.Size = UDim2.new(0, 97, 0, 29)
+        ServerTitle.Font = Enum.Font.GothamSemibold
+        ServerTitle.Text = text
+        ServerTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+        ServerTitle.TextSize = 14.000
+        ServerTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+        ChannelContentFrame.Name = "ChannelContentFrame"
+        ChannelContentFrame.Parent = ServerFrame
+        ChannelContentFrame.BackgroundColor3 = Color3.fromRGB(45, 47, 52)
+        ChannelContentFrame.BorderSizePixel = 0
+        ChannelContentFrame.ClipsDescendants = true
+        ChannelContentFrame.Position = UDim2.new(0.3, 0, 0.1, 0)
+        ChannelContentFrame.Size = UDim2.new(0, 305, 0, 297)
+
+        ServerChannelHolder.Name = "ServerChannelHolder"
+        ServerChannelHolder.Parent = ServerFrame
+        ServerChannelHolder.Active = true
+        ServerChannelHolder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        ServerChannelHolder.BackgroundTransparency = 1.000
+        ServerChannelHolder.BorderSizePixel = 0
+        ServerChannelHolder.Position = UDim2.new(0.00535549596, 0, 0.0241984241, 0)
+        ServerChannelHolder.Selectable = false
+        ServerChannelHolder.Size = UDim2.new(0, 140, 0, 297)
+        ServerChannelHolder.CanvasSize = UDim2.new(0, 0, 0, 0)
+        ServerChannelHolder.ScrollBarThickness = 3
+        ServerChannelHolder.ScrollBarImageColor3 = Color3.fromRGB(18, 19, 21)
+
+        ServerChannelHolderLayout.Name = "ServerChannelHolderLayout"
+        ServerChannelHolderLayout.Parent = ServerChannelHolder
+        ServerChannelHolderLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        ServerChannelHolderLayout.Padding = UDim.new(0, 3)
+
+        ServerChannelHolderPadding.Name = "ServerChannelHolderPadding"
+        ServerChannelHolderPadding.Parent = ServerChannelHolder
+        ServerChannelHolderPadding.PaddingLeft = UDim.new(0, 8)
+        
+        -- Server etkileşimleri
+        Server.MouseEnter:Connect(
+            function()
+                if currentservertoggled ~= Server.Name then
+                    TweenService:Create(
+                        Server,
+                        TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        {BackgroundColor3 = Color3.fromRGB(114, 137, 228)}
+                    ):Play()
+                    ServerWhiteFrame:TweenSize(
+                        UDim2.new(0, 8, 0, 25),
+                        Enum.EasingDirection.Out,
+                        Enum.EasingStyle.Quart,
+                        .3,
+                        true
+                    )
+                end
+            end
+        )
+
+        Server.MouseLeave:Connect(
+            function()
+                if currentservertoggled ~= Server.Name then
+                    TweenService:Create(
+                        Server,
+                        TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        {BackgroundColor3 = Color3.fromRGB(35, 37, 42)}
+                    ):Play()
+                    ServerWhiteFrame:TweenSize(
+                        UDim2.new(0, 8, 0, 8),
+                        Enum.EasingDirection.Out,
+                        Enum.EasingStyle.Quart,
+                        .3,
+                        true
+                    )
+                end
+            end
+        )
+
+        Server.MouseButton1Click:Connect(
+            function()
+                currentservertoggled = Server.Name
+                for i, v in next, ServersHolder:GetChildren() do
+                    if v.Name == "ServerFrame" then
+                        v.Visible = false
+                    end
+                    ServerFrame.Visible = true
+                end
+                for i, v in next, ServersHold:GetChildren() do
+                    if v.ClassName == "TextButton" then
+                        TweenService:Create(
+                            v,
+                            TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {BackgroundColor3 = Color3.fromRGB(35, 37, 42)}
+                        ):Play()
+                        TweenService:Create(
+                            Server,
+                            TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {BackgroundColor3 = Color3.fromRGB(114, 137, 228)}
+                        ):Play()
+                        v.ServerWhiteFrame:TweenSize(
+                            UDim2.new(0, 8, 0, 8),
+                            Enum.EasingDirection.Out,
+                            Enum.EasingStyle.Quart,
+                            .3,
+                            true
+                        )
+                        ServerWhiteFrame:TweenSize(
+                            UDim2.new(0, 8, 0, 35),
+                            Enum.EasingDirection.Out,
+                            Enum.EasingStyle.Quart,
+                            .3,
+                            true
+                        )
+                    end
+                end
+            end
+        )
+
+        if img == "" then
+            Server.Text = string.sub(text, 1, 1)
+        else
+            ServerIco.Image = img
+        end
+
+        if fs == false then
+            TweenService:Create(
+                Server,
+                TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {BackgroundColor3 = Color3.fromRGB(114, 137, 228)}
+            ):Play()
+            ServerWhiteFrame:TweenSize(
+                UDim2.new(0, 8, 0, 35),
+                Enum.EasingDirection.Out,
+                Enum.EasingStyle.Quart,
+                .3,
+                true
+            )
+            ServerFrame.Visible = true
+            Server.Name = text .. "Server"
+            currentservertoggled = Server.Name
+            fs = true
+        end
+        
+        -- Basitleştirilmiş Channel fonksiyonu
+        local ChannelHold = {}
+        function ChannelHold:Channel(text)
+            local ChannelBtn = Instance.new("TextButton")
+            local ChannelBtnCorner = Instance.new("UICorner")
+            local ChannelBtnHashtag = Instance.new("TextLabel")
+            local ChannelBtnTitle = Instance.new("TextLabel")
+
+            ChannelBtn.Name = text .. "ChannelBtn"
+            ChannelBtn.Parent = ServerChannelHolder
+            ChannelBtn.BackgroundColor3 = Color3.fromRGB(35, 37, 42)
+            ChannelBtn.BorderSizePixel = 0
+            ChannelBtn.Position = UDim2.new(0.24118948, 0, 0.578947365, 0)
+            ChannelBtn.Size = UDim2.new(0, 125, 0, 25)
+            ChannelBtn.AutoButtonColor = false
+            ChannelBtn.Font = Enum.Font.SourceSans
+            ChannelBtn.Text = ""
+            ChannelBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+            ChannelBtn.TextSize = 14.000
+
+            ChannelBtnCorner.CornerRadius = UDim.new(0, 4)
+            ChannelBtnCorner.Name = "ChannelBtnCorner"
+            ChannelBtnCorner.Parent = ChannelBtn
+
+            ChannelBtnHashtag.Name = "ChannelBtnHashtag"
+            ChannelBtnHashtag.Parent = ChannelBtn
+            ChannelBtnHashtag.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            ChannelBtnHashtag.BackgroundTransparency = 1.000
+            ChannelBtnHashtag.BorderSizePixel = 0
+            ChannelBtnHashtag.Position = UDim2.new(0.05, 0, 0, 0)
+            ChannelBtnHashtag.Size = UDim2.new(0, 20, 0, 25)
+            ChannelBtnHashtag.Font = Enum.Font.Gotham
+            ChannelBtnHashtag.Text = "#"
+            ChannelBtnHashtag.TextColor3 = Color3.fromRGB(114, 118, 125)
+            ChannelBtnHashtag.TextSize = 16.000
+
+            ChannelBtnTitle.Name = "ChannelBtnTitle"
+            ChannelBtnTitle.Parent = ChannelBtn
+            ChannelBtnTitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            ChannelBtnTitle.BackgroundTransparency = 1.000
+            ChannelBtnTitle.BorderSizePixel = 0
+            ChannelBtnTitle.Position = UDim2.new(0.2, 0, 0, 0)
+            ChannelBtnTitle.Size = UDim2.new(0, 95, 0, 25)
+            ChannelBtnTitle.Font = Enum.Font.Gotham
+            ChannelBtnTitle.Text = text
+            ChannelBtnTitle.TextColor3 = Color3.fromRGB(114, 118, 125)
+            ChannelBtnTitle.TextSize = 12.000
+            ChannelBtnTitle.TextXAlignment = Enum.TextXAlignment.Left
+            ServerChannelHolder.CanvasSize = UDim2.new(0, 0, 0, ServerChannelHolderLayout.AbsoluteContentSize.Y)
+
+            -- Basitleştirilmiş ChannelHolder
+            local ChannelHolder = Instance.new("ScrollingFrame")
+            local ChannelHolderLayout = Instance.new("UIListLayout")
+
+            ChannelHolder.Name = "ChannelHolder"
+            ChannelHolder.Parent = ChannelContentFrame
+            ChannelHolder.Active = true
+            ChannelHolder.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            ChannelHolder.BackgroundTransparency = 1.000
+            ChannelHolder.BorderSizePixel = 0
+            ChannelHolder.Position = UDim2.new(0.02, 0, 0.02, 0)
+            ChannelHolder.Size = UDim2.new(0, 295, 0, 290)
+            ChannelHolder.ScrollBarThickness = 4
+            ChannelHolder.CanvasSize = UDim2.new(0,0,0,0)
+            ChannelHolder.Visible = false
+            ChannelHolder.ClipsDescendants = false
+
+            ChannelHolderLayout.Name = "ChannelHolderLayout"
+            ChannelHolderLayout.Parent = ChannelHolder
+            ChannelHolderLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            ChannelHolderLayout.Padding = UDim.new(0, 5)
+            
+            -- Channel etkileşimleri
+            ChannelBtn.MouseEnter:Connect(function()
+                if currentchanneltoggled ~= ChannelBtn.Name then
+                    ChannelBtn.BackgroundColor3 = Color3.fromRGB(45,47,52)
+                    ChannelBtnTitle.TextColor3 = Color3.fromRGB(220,221,222)
+                end
+            end)
+            
+            ChannelBtn.MouseLeave:Connect(function()
+                if currentchanneltoggled ~= ChannelBtn.Name then
+                    ChannelBtn.BackgroundColor3 = Color3.fromRGB(35, 37, 42)
+                    ChannelBtnTitle.TextColor3 = Color3.fromRGB(114, 118, 125)
+                end
+            end)
+            
+            ChannelBtn.MouseButton1Click:Connect(function()
+                for i, v in next, ChannelContentFrame:GetChildren() do
+                    if v.Name == "ChannelHolder" then
+                        v.Visible = false
+                    end
+                    ChannelHolder.Visible = true
+                end
+                for i, v in next, ServerChannelHolder:GetChildren() do
+                    if v.ClassName == "TextButton" then
+                        v.BackgroundColor3 = Color3.fromRGB(35, 37, 42)
+                        v.ChannelBtnTitle.TextColor3 = Color3.fromRGB(114, 118, 125)
+                    end
+                end
+                ChannelBtn.BackgroundColor3 = Color3.fromRGB(50,52,57)
+                ChannelBtnTitle.TextColor3 = Color3.fromRGB(255,255,255)
+                currentchanneltoggled = ChannelBtn.Name
+            end)
+            
+            if fc == false then
+                fc = true
+                ChannelBtn.BackgroundColor3 = Color3.fromRGB(50,52,57)
+                ChannelBtnTitle.TextColor3 = Color3.fromRGB(255,255,255)
+                currentchanneltoggled = ChannelBtn.Name
+                ChannelHolder.Visible = true
+            end
+            
+            -- Basitleştirilmiş UI element fonksiyonları
+            local ChannelContent = {}
+            
+            function ChannelContent:Button(text,callback)
+                local Button = Instance.new("TextButton")
+                local ButtonCorner = Instance.new("UICorner")
+
+                Button.Name = "Button"
+                Button.Parent = ChannelHolder
+                Button.BackgroundColor3 = Color3.fromRGB(114, 137, 228)
+                Button.Size = UDim2.new(0, 285, 0, 25)
+                Button.AutoButtonColor = false
+                Button.Font = Enum.Font.Gotham
+                Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Button.TextSize = 12.000
+                Button.Text = text
+
+                ButtonCorner.CornerRadius = UDim.new(0, 4)
+                ButtonCorner.Name = "ButtonCorner"
+                ButtonCorner.Parent = Button
+                
+                Button.MouseEnter:Connect(function()
+                    TweenService:Create(
+                        Button,
+                        TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        {BackgroundColor3 = Color3.fromRGB(103,123,196)}
+                    ):Play()
+                end)
+                
+                Button.MouseButton1Click:Connect(function()
+                    pcall(callback)
+                    Button.TextSize = 0
+                    TweenService:Create(
+                        Button,
+                        TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        {TextSize = 12}
+                    ):Play()
+                end)
+                
+                Button.MouseLeave:Connect(function()
+                    TweenService:Create(
+                        Button,
+                        TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                        {BackgroundColor3 = Color3.fromRGB(114, 137, 228)}
+                    ):Play()
+                end)
+                ChannelHolder.CanvasSize = UDim2.new(0,0,0,ChannelHolderLayout.AbsoluteContentSize.Y)
+            end
+            
+            function ChannelContent:Toggle(text,default,callback)
+                local toggled = false
+                local Toggle = Instance.new("TextButton")
+                local ToggleTitle = Instance.new("TextLabel")
+                local ToggleFrame = Instance.new("Frame")
+                local ToggleFrameCorner = Instance.new("UICorner")
+                local ToggleFrameCircle = Instance.new("Frame")
+                local ToggleFrameCircleCorner = Instance.new("UICorner")
+
+                Toggle.Name = "Toggle"
+                Toggle.Parent = ChannelHolder
+                Toggle.BackgroundColor3 = Color3.fromRGB(45, 47, 52)
+                Toggle.BorderSizePixel = 0
+                Toggle.Position = UDim2.new(0.261979163, 0, 0.190789461, 0)
+                Toggle.Size = UDim2.new(0, 285, 0, 25)
+                Toggle.AutoButtonColor = false
+                Toggle.Font = Enum.Font.Gotham
+                Toggle.Text = ""
+                Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Toggle.TextSize = 14.000
+
+                ToggleTitle.Name = "ToggleTitle"
+                ToggleTitle.Parent = Toggle
+                ToggleTitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                ToggleTitle.BackgroundTransparency = 1.000
+                ToggleTitle.Position = UDim2.new(0, 5, 0, 0)
+                ToggleTitle.Size = UDim2.new(0, 200, 0, 25)
+                ToggleTitle.Font = Enum.Font.Gotham
+                ToggleTitle.Text = text
+                ToggleTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+                ToggleTitle.TextSize = 12.000
+                ToggleTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+                ToggleFrame.Name = "ToggleFrame"
+                ToggleFrame.Parent = Toggle
+                ToggleFrame.BackgroundColor3 = Color3.fromRGB(114, 118, 125)
+                ToggleFrame.Position = UDim2.new(0.85, -5, 0.2, 0)
+                ToggleFrame.Size = UDim2.new(0, 30, 0, 15)
+
+                ToggleFrameCorner.CornerRadius = UDim.new(1, 8)
+                ToggleFrameCorner.Name = "ToggleFrameCorner"
+                ToggleFrameCorner.Parent = ToggleFrame
+
+                ToggleFrameCircle.Name = "ToggleFrameCircle"
+                ToggleFrameCircle.Parent = ToggleFrame
+                ToggleFrameCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                ToggleFrameCircle.Position = UDim2.new(0.1, -5, 0.1, 0)
+                ToggleFrameCircle.Size = UDim2.new(0, 11, 0, 11)
+
+                ToggleFrameCircleCorner.CornerRadius = UDim.new(1, 0)
+                ToggleFrameCircleCorner.Name = "ToggleFrameCircleCorner"
+                ToggleFrameCircleCorner.Parent = ToggleFrameCircle
+                
+                Toggle.MouseButton1Click:Connect(function()
+                    if toggled == false then
+                        TweenService:Create(
+                            ToggleFrame,
+                            TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {BackgroundColor3 = Color3.fromRGB(67,181,129)}
+                        ):Play()
+                        ToggleFrameCircle:TweenPosition(UDim2.new(0.55, -5, 0.1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, .3, true)
+                    else
+                        TweenService:Create(
+                            ToggleFrame,
+                            TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                            {BackgroundColor3 = Color3.fromRGB(114, 118, 125)}
+                        ):Play()
+                        ToggleFrameCircle:TweenPosition(UDim2.new(0.1, -5, 0.1, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, .3, true)
+                    end
+                    toggled = not toggled
+                    pcall(callback, toggled)
+                end)
+                
+                ChannelHolder.CanvasSize = UDim2.new(0,0,0,ChannelHolderLayout.AbsoluteContentSize.Y)
+            end
+            
+            function ChannelContent:Label(text)
+                local Label = Instance.new("TextButton")
+                local LabelTitle = Instance.new("TextLabel")
+
+                Label.Name = "Label"
+                Label.Parent = ChannelHolder
+                Label.BackgroundColor3 = Color3.fromRGB(45, 47, 52)
+                Label.BorderSizePixel = 0
+                Label.Position = UDim2.new(0.261979163, 0, 0.190789461, 0)
+                Label.Size = UDim2.new(0, 285, 0, 25)
+                Label.AutoButtonColor = false
+                Label.Font = Enum.Font.Gotham
+                Label.Text = ""
+                Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+                Label.TextSize = 14.000
+
+                LabelTitle.Name = "LabelTitle"
+                LabelTitle.Parent = Label
+                LabelTitle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                LabelTitle.BackgroundTransparency = 1.000
+                LabelTitle.Position = UDim2.new(0, 5, 0, 0)
+                LabelTitle.Size = UDim2.new(0, 200, 0, 25)
+                LabelTitle.Font = Enum.Font.Gotham
+                LabelTitle.Text = text
+                LabelTitle.TextColor3 = Color3.fromRGB(150, 150, 150)
+                LabelTitle.TextSize = 12.000
+                LabelTitle.TextXAlignment = Enum.TextXAlignment.Left
+                
+                ChannelHolder.CanvasSize = UDim2.new(0,0,0,ChannelHolderLayout.AbsoluteContentSize.Y)
+            end
+            
+            return ChannelContent
+        end
+        
+        return ChannelHold
+    end
+    return ServerHold
+end
+
+return DiscordLib
